@@ -1,9 +1,76 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0" version="26.1.1">
   <diagram name="第 1 页" id="BhhDvGswTZ7OfyNzTxtm">
-    <mxGraphModel>
+    <mxGraphModel dx="1011" dy="620" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="reWe26Az9jfd1M2dEUiP-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="reWe26Az9jfd1M2dEUiP-1" target="reWe26Az9jfd1M2dEUiP-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-1" value="&lt;p align=&quot;center&quot; class=&quot;MsoNormal&quot;&gt;&lt;span lang=&quot;EN-AU&quot;&gt;Participants&lt;/span&gt;&lt;span lang=&quot;EN-AU&quot;&gt; &lt;/span&gt;&lt;span lang=&quot;EN-AU&quot;&gt;joined the Rotterdam Study at&lt;br/&gt;RS-I-5, RS-II-3, and RS-III-2 (n=7,162)&lt;/span&gt;&lt;span lang=&quot;EN-AU&quot;&gt; &lt;/span&gt;&lt;/p&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="180" y="140" width="170" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="reWe26Az9jfd1M2dEUiP-2" target="reWe26Az9jfd1M2dEUiP-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-2" value="&lt;p align=&quot;center&quot; class=&quot;MsoNormal&quot;&gt;Participants complete&lt;br/&gt;DXA measurements in UK Biobank (n=79,630)&lt;/p&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="140" width="170" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="reWe26Az9jfd1M2dEUiP-4" target="reWe26Az9jfd1M2dEUiP-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="reWe26Az9jfd1M2dEUiP-4" target="reWe26Az9jfd1M2dEUiP-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-4" value="&lt;p align=&quot;center&quot; class=&quot;MsoNormal&quot;&gt;Exclusion criteria:&lt;br/&gt;participants&amp;nbsp; without DXA measurements;&lt;br/&gt;without alcohol consumption&amp;nbsp; response;&lt;br/&gt;without inform consent; non-European; without relatedness.&lt;/p&gt;" style="whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="270" y="280" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-17" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="reWe26Az9jfd1M2dEUiP-7" target="reWe26Az9jfd1M2dEUiP-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-7" value="&lt;p align=&quot;center&quot; class=&quot;MsoNormal&quot;&gt;4,087 participants&lt;br/&gt;from the Rotterdam study included&lt;/p&gt;" style="whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="410" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="reWe26Az9jfd1M2dEUiP-9" target="reWe26Az9jfd1M2dEUiP-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-9" value="&lt;p align=&quot;center&quot; class=&quot;MsoNormal&quot;&gt;29,856 participants&lt;br/&gt;from the UK biobank included&lt;/p&gt;" style="whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="460" y="410" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-11" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" target="reWe26Az9jfd1M2dEUiP-14">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="240" y="360" as="sourcePoint" />
+            <mxPoint x="160" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-13" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" target="reWe26Az9jfd1M2dEUiP-15">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="540" y="360" as="sourcePoint" />
+            <mxPoint x="630" y="400" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-14" value="&lt;p align=&quot;center&quot; class=&quot;MsoNormal&quot;&gt;3,075 participants&lt;br/&gt;excluded&lt;/p&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="90" y="330" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-15" value="&lt;p align=&quot;center&quot; class=&quot;MsoNormal&quot;&gt;49,774 participants&lt;br/&gt;excluded&lt;/p&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="570" y="330" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="reWe26Az9jfd1M2dEUiP-16" target="reWe26Az9jfd1M2dEUiP-19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-16" value="&lt;p class=&quot;MsoNormal&quot;&gt;&lt;/p&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Step 1: Multi-linear&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;regression&lt;/span&gt;&lt;/b&gt;&lt;/div&gt;&lt;p&gt;&lt;/p&gt;&lt;p class=&quot;MsoNormal&quot;&gt;Bone phenotypes ~ log(alcohol intake + 1) + age + sex + income + educational levels + smoking status + &amp;nbsp;physical activities + cohorts&amp;nbsp; (only in RS)&lt;/p&gt;" style="whiteSpace=wrap;html=1;rounded=1;align=left;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="180" y="530" width="420" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="reWe26Az9jfd1M2dEUiP-19" target="reWe26Az9jfd1M2dEUiP-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-19" value="&lt;p class=&quot;MsoNormal&quot; style=&quot;&quot;&gt;&lt;/p&gt;&lt;div style=&quot;&quot;&gt;&lt;b style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Step 2: One-sample&amp;nbsp;&lt;/b&gt;&lt;b style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;MR&lt;/b&gt;&lt;/div&gt;&lt;p&gt;&lt;/p&gt;&lt;p class=&quot;MsoNormal&quot; style=&quot;&quot;&gt;&lt;/p&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&lt;font&gt;Bone phenotypes ~ genetic predicted alcohol consumption +&amp;nbsp;&lt;/font&gt;&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;age + sex + cohorts (only in RS) + PCs&lt;/span&gt;&lt;/div&gt;&lt;p&gt;&lt;/p&gt;" style="whiteSpace=wrap;html=1;align=left;rounded=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="180" y="640" width="420" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="reWe26Az9jfd1M2dEUiP-23" value="&lt;p style=&quot;&quot; class=&quot;MsoNormal&quot;&gt;&lt;/p&gt;&lt;div style=&quot;&quot;&gt;&lt;b style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Step 3: Two-sample MR&lt;/b&gt;&lt;/div&gt;&lt;p&gt;&lt;/p&gt;&lt;p style=&quot;&quot; class=&quot;MsoNormal&quot;&gt;&lt;/p&gt;&lt;div style=&quot;&quot;&gt;&lt;p class=&quot;MsoNormal&quot; style=&quot;&quot;&gt;SNPs obtained from GWAS for alcohol consumption&amp;nbsp; (n=941,280)&lt;br&gt;and bone phenotypes (LSBMD: n=32,961; FNBMD: n=31,800)&lt;/p&gt;&lt;/div&gt;&lt;p&gt;&lt;/p&gt;" style="whiteSpace=wrap;html=1;align=left;rounded=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="180" y="780" width="420" height="110" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
