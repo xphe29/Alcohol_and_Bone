@@ -1,0 +1,653 @@
+---
+title: "Code_ALC_BONE_UKBB"
+author: "Xinpeng"
+date: "2026-03-22"
+output: html_document
+---
+
+# Settings
+```{r}
+library(tidyverse)
+library(ggpubr)
+library(AER)
+library(tableone)
+library(broom)
+library(readxl)
+library(forestplot)
+```
+
+# Creating datasets for analysis
+```{r}
+
+ukb_alc_bmd <- read_csv("//store/department/im/share/personal/059909/PHD/Bone & Alcohol/UKBB_data/UKB_alc_and_bmd/UKB_ALC_BMD/dataset_alc_bmd.csv")
+ukb_alc_bmd <- ukb_alc_bmd[,-1]
+# 38715 participants with BMD measurement
+```
+
+```{r}
+ukb_alc_bmd$eth <- ukb_alc_bmd$`21000-0.0`
+ukb_alc_bmd$geneticEthnic <- ukb_alc_bmd$`22006-0.0`
+ukb_alc_bmd$sex <- ukb_alc_bmd$`31-0.0`
+ukb_alc_bmd$age <- ukb_alc_bmd$`21003-2.0`
+ukb_alc_bmd$BMI <- ukb_alc_bmd$`21001-2.0`
+ukb_alc_bmd$income <- ukb_alc_bmd$`738-2.0`
+ukb_alc_bmd$education <- ukb_alc_bmd$`6138-2.0`
+ukb_alc_bmd$smkstatus <- ukb_alc_bmd$`20116-2.0`
+ukb_alc_bmd$alcFrq <- ukb_alc_bmd$`1558-2.0`
+ukb_alc_bmd$beer <- ukb_alc_bmd$`1588-2.0`
+ukb_alc_bmd$spirits <- ukb_alc_bmd$`1598-2.0`
+ukb_alc_bmd$fortified <- ukb_alc_bmd$`1608-2.0`
+ukb_alc_bmd$champagne <- ukb_alc_bmd$`1578-2.0`
+ukb_alc_bmd$redwine <- ukb_alc_bmd$`1568-2.0`
+ukb_alc_bmd$otheralc <- ukb_alc_bmd$`5364-2.0`
+ukb_alc_bmd$fnbmd <- ukb_alc_bmd$`23208-2.0`
+ukb_alc_bmd$lsbmd <- ukb_alc_bmd$`23204-2.0`
+ukb_alc_bmd$tobmd <- ukb_alc_bmd$`23236-2.0`
+ukb_alc_bmd$beer_month <- ukb_alc_bmd$`4429-2.0`
+ukb_alc_bmd$spirits_month <- ukb_alc_bmd$`4440-2.0`
+ukb_alc_bmd$fortified_month <- ukb_alc_bmd$`4451-2.0`
+ukb_alc_bmd$champagne_month <- ukb_alc_bmd$`4418-2.0`
+ukb_alc_bmd$redwine_month <- ukb_alc_bmd$`4407-2.0`
+ukb_alc_bmd$otheralc_month <- ukb_alc_bmd$`4462-2.0`
+
+
+ukb_alc_bmd <- ukb_alc_bmd %>%
+  mutate_all(~ ifelse(. %in% c(-1,-3,-7), NA, .)) # recode -1,-3,-7 to NA
+```
+
+```{r}
+df <- ukb_alc_bmd[,c(1,32:56)]
+df <- df[!is.na(df$alcFrq),] #38425 participants with alcohol frequency
+
+# calculate alcohol intake
+df$alctot <- df$beer*20+(df$spirits+df$fortified+df$champagne+df$redwine)*10+df$otheralc*0
+df$alctot_month <- df$beer_month*20+(df$spirits_month+df$fortified_month+df$champagne_month+df$redwine_month)*10+df$otheralc_month*0
+
+df$alctot_1 <- df$alctot/7
+df$alctot_month_1 <- df$alctot_month/30.4375
+df$alctot0 <- ifelse(!is.na(df$alctot_1),df$alctot_1,df$alctot_month_1)
+df$alctot2 <- ifelse(df$alcFrq==6,0,df$alctot0)
+
+#df2 <- df[!is.na(df$alctot0),]
+#df2$alctot_1 <- df2$alctot/7
+#df2$alctot_month_1 <- df2$alctot_month/30.4375
+#df2$alctot0 <- ifelse(!is.na(df2$alctot_1),df2$alctot_1,df2$alctot_month_1)
+df$alctot2 <- ifelse(df$alcFrq==6,0,df$alctot0)
+
+df4 <- df[!is.na(df$alctot2),] # filter out participants without alcohol consumption 38096 left
+
+df4 <- df4 %>%
+  mutate(eth_all = case_when(
+    eth %in% c(1, 1001, 1002, 1003) ~ 1,
+    eth %in% c(2, 2001, 2002, 2003, 2004) ~ 2,
+    eth %in% c(3, 3001, 3002, 3003, 3004) ~ 3,
+    eth %in% c(4, 4001, 4002, 4003) ~ 4,
+    eth %in% c(5, 6) ~ 5
+  ))
+
+df5 <- df4[!is.na(df4$geneticEthnic),] # 32323 participants left
+```
+
+
+```{r}
+# filtering out related participants randomly
+relatedness1 <- read.table("//store/department/im/share/projects/Fernando_Group/Alcohol_BMD_Xinpeng/UK Biobank/datasets/ukb_rel_a67864_s488161.txt",header = T)
+
+relatedness1 <- relatedness1 %>%
+  mutate(relatedness = if_else(Kinship >= 0.0884, 1,0))
+table(relatedness1$relatedness)
+relatedness1 <- relatedness1 %>%
+  rename(eid = ID1)
+relatedness_0.0884 <- relatedness1[relatedness1$relatedness==1,] 
+
+relatedness1 <- relatedness1 %>%
+  mutate(relatedness_0.0442 = if_else(Kinship >= 0.0442, 1, 0))
+table(relatedness1$relatedness_0.0442)
+relatedness_0.0442 <- relatedness1[relatedness1$relatedness_0.0442 == 1, ]
+
+set.seed(123)
+unique_data <- relatedness_0.0442 %>%
+  group_by(eid) %>%
+  sample_n(1) %>%
+  ungroup()
+print(unique_data)
+write.csv(unique_data, "relatedness_0.0442_unique.csv")
+
+df5 <- left_join(df5, unique_data, by = "eid")
+table(df5$relatedness,useNA = "always")
+df6 <- df5 %>%
+  filter(is.na(relatedness) | relatedness != 1)
+dim(df6)
+df6$PA_all_hrs <- df6$PA_all/60
+df6 <- df6 %>%
+  mutate(edu_recode = case_when(
+                     education %in% c(3,4) ~ 1,
+                     education == 2 ~ 2,
+                     education == 6 ~ 3,
+                     education %in% c(1,5) ~ 4))
+```
+
+# Basic characteristics
+```{r}
+myVars <- c("age","sex","BMI","geneticEthnic","education","income","smkstatus","alcFrq","PA_all","beer","spirits","fortified","champagne","redwine","otheralc","alctot2","lsbmd","fnbmd","tobmd","PA_all_hrs","edu_recode")
+catVars <- c("sex","education","income","smkstatus","alcFrq","edu_recode")
+nonormalVars <- c("PA_all","alctot2","PA_all_hrs")
+
+tab2 <- CreateTableOne(vars = myVars,data = df6,factorVars = catVars,strata = "sex")
+tab2Mat <- print(tab2,nonnormal = nonormalVars,formatOptions = list(big.mark=","))
+write.csv(tab2Mat, "DescTab_UKBB.csv")
+summary(tab2)
+```
+```{r}
+tab3 <- CreateTableOne(vars = myVars, data = df6, factorVars = catVars, strata = "alc_group")
+tab3Mat <- print(tab3, nonnormal = nonormalVars, formatOptions = list(big.mark=","), showAllLevels = TRUE)
+write.csv(tab3Mat, "DescTab_UKBB_withoutRelatedness.csv")
+```
+
+# Histogram of alcohol consumption
+```{r}
+hist(df6$alctot2, main = "Histogram of alcohol intake", xlab = "log(alcohol/10+1)")
+hist(log(df6$alctot2/10+1), main = "Histogram of log-transformed alcohol intake", xlab = "log(alcohol/10+1)")
+```
+
+# Linear model - general population
+```{r}
+df6$sex <- as.factor(df6$sex)
+df6$income <- as.factor(df6$income)
+df6$education <- as.factor(df6$education)
+df6$smkstatus <- as.factor(df6$smkstatus)
+df6$eth_all <- as.factor(df6$eth_all)
+df6 <- left_join(df6,ukb_lstbs_origin, by="eid")
+df6 <- df6 %>% 
+  group_by(sex) %>% 
+  mutate(std_lsbmd = as.vector(scale(lsbmd)),
+         std_fnbmd = as.vector(scale(fnbmd)),
+         std_tobmd = as.vector(scale(tobmd)),
+         std_lstbs = as.vector(scale(LSTBS))) %>% 
+  ungroup()
+```
+
+## LSBMD
+```{r}
+lsmod1 <- lm(std_lsbmd~log(alctot2/10+1)+age+sex,data = df6)
+lsmod2 <- lm(std_lsbmd~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all,data = df6)
+lsmod3 <- lm(std_lsbmd~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all+BMI,data = df6)
+
+tidy(lsmod1, conf.int = T)
+tidy(lsmod2, conf.int = T)
+tidy(lsmod3, conf.int = T)
+```
+## FNBMD
+```{r}
+fnmod1 <- lm(std_fnbmd~log(alctot2/10+1)+age+sex,data = df6)
+fnmod2 <- lm(std_fnbmd~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all,data = df6)
+fnmod3 <- lm(std_fnbmd~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all+BMI,data = df6)
+
+tidy(fnmod1, conf.int = T)
+tidy(fnmod2,conf.int = T)
+tidy(fnmod3,conf.int = T)
+```
+## TBBMD
+```{r}
+tomod1 <- lm(std_tobmd~log(alctot2/10+1)+age+sex,data = df6)
+tomod2 <- lm(scale(tobmd)~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all,data = df6)
+tomod3 <- lm(scale(tobmd)~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all+BMI,data = df6)
+
+tidy(tomod1,conf.int = T)
+tidy(tomod2,conf.int = T)
+tidy(tomod3,conf.int = T)
+```
+## LSTBS
+```{r}
+tbsmod1 <- lm(std_lstbs~log(alctot2/10+1)+age+sex,data = df6)
+tbsmod2 <- lm(std_lstbs~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all,data = df6)
+tbsmod3 <- lm(std_lstbs~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all+BMI,data = df6)
+
+tidy(tbsmod1,conf.int = T)
+tidy(tbsmod2,conf.int = T)
+tidy(tbsmod3,conf.int = T)
+```
+
+# Alcohol-subgroups analysis - general population
+```{r}
+# Create variable for alcohol subgroups
+df6 <- df6 %>%
+  mutate(
+    alc_group = case_when(
+      sex == 0 & alctot2 == 0 ~ 0,
+      sex == 0 & alctot2 > 0 & alctot2 <= 10 ~ 1,
+      sex == 0 & alctot2 > 10 ~ 2,
+      sex == 1 & alctot2 == 0 ~ 0,
+      sex == 1 & alctot2 > 0 & alctot2 <= 20 ~ 1,
+      sex == 1 & alctot2 > 20 ~ 2,
+      TRUE ~ NA_real_ 
+    )
+  )
+table(df6$alc_group)
+```
+## LSBMD
+```{r}
+lscat <- lm(std_lsbmd~as.factor(alc_group)+age+sex+income+education+smkstatus+PA_all+BMI,data = df6)
+tidy(lscat, conf.int = TRUE)
+```
+## FNBMD
+```{r}
+nkcat <- lm(std_fnbmd~as.factor(alc_group)+age+sex+income+education+smkstatus+PA_all+BMI,data = df6)
+tidy(nkcat, conf.int = TRUE)
+```
+## TBBMD
+```{r}
+tocat <- lm(std_tobmd~as.factor(alc_group)+age+sex+income+education+smkstatus+PA_all+BMI,data = df6)
+tidy(tocat,conf.int = T)
+```
+## LSTBS
+```{r}
+tbscat <- lm(std_lstbs~as.factor(alc_group)+age+sex+income+education+smkstatus+PA_all+BMI,data = df6)
+tidy(tbscat, conf.int=T)
+```
+# Forest plot - general population
+```{r}
+fp <- read_excel("Forestplot_UKBB.xlsx")
+
+# Forestplot
+png("fp.png", width = 800, height = 600)
+fp |> 
+  group_by(group) |>
+  forestplot(fn.ci_norm = c(fpDrawNormalCI, fpDrawCircleCI),
+             boxsize = .15, # We set the box size to better visualize the type
+             line.margin = .1, # We need to add this to avoid crowding
+             xlab = "Beta (95% CI)",
+             vertices = TRUE) |>
+  fp_add_lines() |>
+  fp_set_style(box = c("blue", "red") |> lapply(function(x) gpar(fill = x, col = "#555555")),
+               default = gpar(vertices = TRUE),
+               lines = "darkblue",
+               txt_gp = fpTxtGp(ticks = gpar(fontfamily = "", cex = 0.8),
+                                xlab = gpar(fontfamily = "", cex = 0.8))) |>
+  fp_set_zebra_style("#F5F9F9")
+dev.off()
+```
+
+# Sex-stratified
+```{r}
+# setting datasets
+df6_f <- df6[df6$sex == 0,]
+df6_m <- df6[df6$sex == 1,]
+```
+
+# Linear model - Female
+## LSBMD
+```{r}
+lsmod1_f <- lm(std_lsbmd~log(alctot2/10+1)+age,data = df6_f)
+lsmod2_f <- lm(std_lsbmd~log(alctot2/10+1)+age+income+education+smkstatus+PA_all,data = df6_f)
+lsmod3_f <- lm(std_lsbmd~log(alctot2/10+1)+age+income+education+smkstatus+PA_all+BMI,data = df6_f)
+
+tidy(lsmod1_f)
+tidy(lsmod2_f)
+tidy(lsmod3_f,conf.int=TRUE)
+```
+## FNBMD
+```{r}
+fnmod1_f <- lm(std_fnbmd~log(alctot2/10+1)+age,data = df6_f)
+fnmod2_f <- lm(std_fnbmd~log(alctot2/10+1)+age+income+education+smkstatus+PA_all,data = df6_f)
+fnmod3_f <- lm(std_fnbmd~log(alctot2/10+1)+age+income+education+smkstatus+PA_all+BMI,data = df6_f)
+
+summary(fnmod1_f)
+summary(fnmod2_f)
+summary(fnmod3_f)
+
+tidy(fnmod1_f)
+tidy(fnmod2_f)
+tidy(fnmod3_f,conf.int=TRUE)
+```
+## TBBMD
+```{r}
+tomod1_f <- lm(std_tobmd~log(alctot2/10+1)+age,data = df6_f)
+tomod2_f <- lm(std_tobmd~log(alctot2/10+1)+age+income+education+smkstatus+PA_all,data = df6_f)
+tomod3_f <- lm(std_tobmd~log(alctot2/10+1)+age+income+education+smkstatus+PA_all+BMI,data = df6_f)
+
+summary(tomod1_f)
+summary(tomod2_f)
+tidy(tomod3_f,conf.int=TRUE)
+```
+## LSTBS
+```{r}
+tbsmod1_f <- lm(std_lstbs~log(alctot2/10+1)+age,data = df6_f)
+tbsmod2_f <- lm(std_lstbs~log(alctot2/10+1)+age+income+education+smkstatus+PA_all,data = df6_f)
+tbsmod3_f <- lm(std_lstbs~log(alctot2/10+1)+age+income+education+smkstatus+PA_all+BMI,data = df6_f)
+
+summary(tbsmod1_f)
+summary(tbsmod2_f)
+tidy(tbsmod3_f,conf.int=TRUE)
+```
+# Alcohol-subgroups analysis - Female
+```{r}
+table(df6_f$alc_group)
+```
+## LSBMD
+```{r}
+lscat_f <- lm(std_lsbmd~as.factor(alc_group)+age+income+education+smkstatus+PA_all+BMI,data = df6_f)
+tidy(lscat_f, conf.int = T)
+```
+## FNBMD
+```{r}
+nkcat_f <- lm(std_fnbmd~as.factor(alc_group)+age+income+education+smkstatus+PA_all+BMI,data = df6_f)
+tidy(nkcat_f, conf.int = T)
+```
+## TBBMD
+```{r}
+tocat_f <- lm(std_tobmd~as.factor(alc_group)+age+income+education+smkstatus+PA_all+BMI,data = df6_f)
+tidy(tocat_f, conf.int = T)
+```
+## LSTBS
+```{r}
+tbscat_f <- lm(std_lstbs~as.factor(alc_group)+age+income+education+smkstatus+PA_all+BMI,data = df6_f)
+tidy(tbscat_f, conf.int = T)
+```
+# Forest plot - female
+```{r}
+
+fp_f <- read_excel("Forestplot_F.xlsx")
+
+# Forestplot - Female
+png("fp_f.png", width = 800, height = 600)
+fp_f |> 
+  group_by(group) |>
+  forestplot(fn.ci_norm = c(fpDrawNormalCI, fpDrawCircleCI),
+             boxsize = .15, # We set the box size to better visualize the type
+             line.margin = .1, # We need to add this to avoid crowding
+             xlab = "Beta (95% CI)",
+             vertices = TRUE) |>
+  fp_add_lines() |>
+  fp_set_style(box = c("blue", "red") |> lapply(function(x) gpar(fill = x, col = "#555555")),
+               default = gpar(vertices = TRUE),
+               lines = "darkblue",
+               txt_gp = fpTxtGp(ticks = gpar(fontfamily = "", cex = 0.8),
+                                xlab = gpar(fontfamily = "", cex = 0.8))) |>
+  fp_set_zebra_style("#F5F9F9")
+dev.off()
+```
+
+# Linear model - Male
+## LSBMD
+```{r}
+lsmod1_m <- lm(std_lsbmd~log(alctot2/10+1)+age,data = df6_m)
+lsmod2_m <- lm(std_lsbmd~log(alctot2/10+1)+age+income+education+smkstatus+PA_all,data = df6_m)
+lsmod3_m <- lm(std_lsbmd~log(alctot2/10+1)+age+income+education+smkstatus+PA_all+BMI,data = df6_m)
+
+tidy(lsmod1_m)
+tidy(lsmod2_m)
+tidy(lsmod3_m,conf.int = TRUE)
+```
+## FNBMD
+```{r}
+fnmod1_m <- lm(std_fnbmd~log(alctot2/10+1)+age,data = df6_m)
+fnmod2_m <- lm(std_fnbmd~log(alctot2/10+1)+age+income+education+smkstatus+PA_all,data = df6_m)
+fnmod3_m <- lm(std_fnbmd~log(alctot2/10+1)+age+income+education+smkstatus+PA_all+BMI,data = df6_m)
+
+tidy(fnmod1_m)
+tidy(fnmod2_m)
+tidy(fnmod3_m,conf.int = TRUE)
+```
+## TBBMD
+```{r}
+tomod1_m <- lm(std_tobmd~log(alctot2/10+1)+age,data = df6_m)
+tomod2_m <- lm(std_tobmd~log(alctot2/10+1)+age+income+education+smkstatus+PA_all,data = df6_m)
+tomod3_m <- lm(std_tobmd~log(alctot2/10+1)+age+income+education+smkstatus+PA_all+BMI,data = df6_m)
+
+tidy(tomod1_m)
+tidy(tomod2_m)
+tidy(tomod3_m,conf.int = TRUE)
+```
+## LSTBS
+```{r}
+tbsmod1_m <- lm(std_lstbs~log(alctot2/10+1)+age,data = df6_m)
+tbsmod2_m <- lm(std_lstbs~log(alctot2/10+1)+age+income+education+smkstatus+PA_all,data = df6_m)
+tbsmod3_m <- lm(std_lstbs~log(alctot2/10+1)+age+income+education+smkstatus+PA_all+BMI,data = df6_m)
+
+tidy(tbsmod1_m)
+tidy(tbsmod2_m)
+tidy(tbsmod3_m,conf.int = TRUE)
+```
+# Alcohol-subgroups analysis - Male
+```{r}
+table(df6_m$alc_group)
+```
+## LSBMD
+```{r}
+lscat_m <- lm(std_lsbmd~as.factor(alc_group)+age+income+education+smkstatus+PA_all+BMI,data = df6_m)
+tidy(lscat_m,conf.int = T)
+```
+## FNBMD
+```{r}
+nkcat_m <- lm(std_fnbmd~as.factor(alc_group)+age+income+education+smkstatus+PA_all+BMI,data = df6_m)
+tidy(nkcat_m, conf.int = T)
+```
+## TBBMD
+```{r}
+tocat_m <- lm(std_tobmd~as.factor(alc_group)+age+income+education+smkstatus+PA_all+BMI,data = df6_m)
+tidy(tocat_m,conf.int = T)
+```
+## LSTBS
+```{r}
+tbscat_m <- lm(std_lstbs~as.factor(alc_group)+age+income+education+smkstatus+PA_all+BMI,data = df6_m)
+tidy(tbscat_m,conf.int = T)
+```
+# Forest plot - male
+```{r}
+fp_m <- read_excel("Forestplot_M.xlsx")
+# Forestplot - Female
+png("fp_m.png", width = 800, height = 600)
+fp_m |> 
+  group_by(group) |>
+  forestplot(fn.ci_norm = c(fpDrawNormalCI, fpDrawCircleCI),
+             boxsize = .15, # We set the box size to better visualize the type
+             line.margin = .1, # We need to add this to avoid crowding
+             xlab = "Beta (95% CI)",
+             vertices = TRUE) |>
+  fp_add_lines() |>
+  fp_set_style(box = c("blue", "red") |> lapply(function(x) gpar(fill = x, col = "#555555")),
+               default = gpar(vertices = TRUE),
+               lines = "darkblue",
+               txt_gp = fpTxtGp(ticks = gpar(fontfamily = "", cex = 0.8),
+                                xlab = gpar(fontfamily = "", cex = 0.8))) |>
+  fp_set_zebra_style("#F5F9F9")
+dev.off()
+
+```
+
+# Age-stratified analysis
+```{r}
+df7 <- df7 %>% 
+  group_by(sex) %>% 
+  mutate(std_lstbs = as.numeric(scale(LSTBS))) %>% 
+  ungroup()
+
+df7_old <- subset(df7, age>= 60)
+df7_young <- subset(df7, age < 60)
+```
+
+# Age < 60yrs
+## LSBMD
+```{r}
+lsmod3_young <- lm(std_lsbmd~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all+BMI,data = df7_young)
+tidy(lsmod3_young,conf.int=TRUE)
+```
+## FNBMD
+```{r}
+fnmod3_young <- lm(std_fnbmd~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all+BMI,data = df7_young)
+tidy(fnmod3_young,conf.int=TRUE)
+```
+## TBBMD
+```{r}
+tomod3_young <- lm(std_tobmd~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all+BMI,data = df7_young)
+tidy(tomod3_young,conf.int=TRUE)
+```
+## LSTBS
+```{r}
+tbsmod3_young <- lm(std_lstbs~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all+BMI,data = df7_young)
+tidy(tbsmod3_young,conf.int=TRUE)
+```
+
+# Age >= 60yrs
+## LSBMD
+```{r}
+lsmod3_old <- lm(std_lsbmd~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all+BMI,data = df7_old)
+tidy(lsmod3_old,conf.int=TRUE)
+```
+## FNBMD
+```{r}
+fnmod3_old <- lm(std_fnbmd~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all+BMI,data = df7_old)
+tidy(fnmod3_old,conf.int=TRUE)
+```
+## TBBMD
+```{r}
+tomod3_old <- lm(std_tobmd~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all+BMI,data = df7_old)
+tidy(tomod3_old,conf.int=TRUE)
+```
+## LSTBS
+```{r}
+tbsmod3_old <- lm(std_lstbs~log(alctot2/10+1)+age+sex+income+education+smkstatus+PA_all+BMI,data = df7_old)
+tidy(tbsmod3_old,conf.int=TRUE)
+```
+# One-sample MR
+## Input 71 SNPs 
+```{r}
+PRS_ALC_sum_71 <- read.table("PRS_ALC_sum_71.all_score",header = TRUE)
+PRS_ALC_sum_71 <- PRS_ALC_sum_71 %>% select(IID, Pt_5e.08) %>% rename(eid = IID, PRS_sum_71 = Pt_5e.08)
+
+df7 <- left_join(df7, PRS_ALC_sum_71, by = "eid")
+all_ivs_71 <- c("PRS_sum_71","age","sex",PCs)
+```
+## Input 71 SNPs withoutUKB
+```{r}
+PRS_ALC_sum_withoutUKB_71 <- read.table("PRS_ALC_sum_withoutUKB_71.all_score",header = TRUE)
+PRS_ALC_sum_withoutUKB_71 <- PRS_ALC_sum_withoutUKB_71 %>% select(IID, Pt_5e.08) %>% rename(eid = IID, PRS_sum_withoutUKB_71 = Pt_5e.08)
+
+df7 <- left_join(df7,PRS_ALC_sum_withoutUKB_71,by="eid")
+all_ivs_withoutUKB_71 <- c("PRS_sum_withoutUKB_71","age","sex",PCs)
+```
+# LSBMD
+## whole data
+```{r}
+formula_string_ls_71 <- paste("std_lsbmd ~", paste(all_vars, collapse = "+"),"|",paste(all_ivs_71, collapse = "+"))
+formula_string_ls_71 <- as.formula(formula_string_ls_71)
+formula_string_ls_71
+mrmod_ls_71 <- ivreg(formula_string_ls_71, data = df7)
+summary(mrmod_ls_71)
+```
+## without UKB
+```{r}
+formula_string_ls_withoutUKB_71 <- paste("std_lsbmd ~", paste(all_vars, collapse = "+"),"|",paste(all_ivs_withoutUKB_71, collapse = "+"))
+formula_string_ls_withoutUKB_71 <- as.formula(formula_string_ls_withoutUKB_71)
+formula_string_ls_withoutUKB_71
+mrmod_ls_withoutUKB_71 <- ivreg(formula_string_ls_withoutUKB_71, data = df7)
+summary(mrmod_ls_withoutUKB_71)
+```
+
+# FNBMD
+## whole data
+```{r}
+formula_string_fn_71 <- paste("std_fnbmd ~", paste(all_vars, collapse = "+"),"|",paste(all_ivs_71, collapse = "+"))
+formula_string_fn_71 <- as.formula(formula_string_fn_71)
+formula_string_fn_71
+mrmod_fn_71 <- ivreg(formula_string_fn_71, data = df7)
+summary(mrmod_fn_71)
+```
+## without UKB
+```{r}
+formula_string_fn_withoutUKB_71 <- paste("std_fnbmd ~", paste(all_vars, collapse = "+"),"|",paste(all_ivs_withoutUKB_71, collapse = "+"))
+formula_string_fn_withoutUKB_71 <- as.formula(formula_string_fn_withoutUKB_71)
+formula_string_fn_withoutUKB_71
+mrmod_fn_withoutUKB_71 <- ivreg(formula_string_fn_withoutUKB_71, data = df7)
+summary(mrmod_fn_withoutUKB_71)
+```
+
+# TBBMD
+## whole data
+```{r}
+formula_string_to_71 <- paste("std_tobmd ~", paste(all_vars, collapse = "+"),"|",paste(all_ivs_71, collapse = "+"))
+formula_string_to_71 <- as.formula(formula_string_to_71)
+formula_string_to_71
+mrmod_to_71 <- ivreg(formula_string_to_71, data = df7)
+summary(mrmod_to_71)
+```
+## without UKB
+```{r}
+formula_string_to_withoutUKB_71 <- paste("std_tobmd ~", paste(all_vars, collapse = "+"),"|",paste(all_ivs_withoutUKB_71, collapse = "+"))
+formula_string_to_withoutUKB_71 <- as.formula(formula_string_to_withoutUKB_71)
+formula_string_to_withoutUKB_71
+mrmod_to_withoutUKB_71 <- ivreg(formula_string_to_withoutUKB_71, data = df7)
+summary(mrmod_to_withoutUKB_71)
+```
+
+# LSTBS
+## whole data
+```{r}
+formula_string_tbs_71 <- paste("std_lstbs ~", paste(all_vars, collapse = "+"),"|",paste(all_ivs_71, collapse = "+"))
+formula_string_tbs_71 <- as.formula(formula_string_tbs_71)
+formula_string_tbs_71
+mrmod_tbs_71 <- ivreg(formula_string_tbs_71, data = df7)
+summary(mrmod_tbs_71)
+```
+## without UKB
+```{r}
+formula_string_tbs_withoutUKB_71 <- paste("std_lstbs ~", paste(all_vars, collapse = "+"),"|",paste(all_ivs_withoutUKB_71, collapse = "+"))
+formula_string_tbs_withoutUKB_71 <- as.formula(formula_string_tbs_withoutUKB_71)
+formula_string_tbs_withoutUKB_71
+mrmod_tbs_withoutUKB_71 <- ivreg(formula_string_tbs_withoutUKB_71, data = df7)
+summary(mrmod_tbs_withoutUKB_71)
+```
+
+# 1-sample MR for PAU
+# Input PGS for PAU in UKBB
+```{r}
+PAU_PRS_sum_0001 <- read.table("PRS_PAU_sum_clumped.all_score", header = T)
+
+PAU_PRS_sum_0001 <- PAU_PRS_sum_0001 %>% 
+  rename(eid = IID,
+         wPRS_PAU_0001 = Pt_5e.08) %>% 
+  select(eid, wPRS_PAU_0001)
+
+df_PAU <- left_join(df_PAU, PAU_PRS_sum_0001, by="eid")
+all_ivs_PAU_0001 <- c("wPRS_PAU_0001",all_ivs_PAU[-1])
+
+df_PAU <- df_PAU %>% 
+  group_by(sex) %>% 
+  mutate(std_lstbs = scale(LSTBS)) %>% 
+  ungroup()
+```
+
+# 1SMR process
+# LSBMD
+```{r}
+formula_string_ls_PAU_0001 <- paste("std_lsbmd ~", paste(all_vars, collapse = "+"),"|",paste(all_ivs_PAU_0001, collapse = "+"))
+formula_string_ls_PAU_0001 <- as.formula(formula_string_ls_PAU_0001)
+formula_string_ls_PAU_0001
+mrmod_ls_PAU_0001 <- ivreg(formula_string_ls_PAU_0001, data = df_PAU)
+tidy(mrmod_ls_PAU_0001, conf.int = T)
+```
+# FNBMD
+```{r}
+formula_string_fn_PAU_0001 <- paste("std_fnbmd ~", paste(all_vars, collapse = "+"),"|",paste(all_ivs_PAU_0001, collapse = "+"))
+formula_string_fn_PAU_0001 <- as.formula(formula_string_fn_PAU_0001)
+formula_string_fn_PAU_0001
+mrmod_fn_PAU_0001 <- ivreg(formula_string_fn_PAU_0001, data = df_PAU)
+tidy(mrmod_fn_PAU_0001, conf.int = T)
+```
+# TBBMD
+```{r}
+formula_string_to_PAU_0001 <- paste("std_tobmd ~", paste(all_vars, collapse = "+"),"|",paste(all_ivs_PAU_0001, collapse = "+"))
+formula_string_to_PAU_0001 <- as.formula(formula_string_to_PAU_0001)
+formula_string_to_PAU_0001
+mrmod_to_PAU_0001 <- ivreg(formula_string_to_PAU_0001, data = df_PAU)
+tidy(mrmod_to_PAU_0001,conf.int=T)
+```
+# LSTBS
+```{r}
+formula_string_tbs_PAU_0001 <- paste("std_lstbs ~", paste(all_vars, collapse = "+"),"|",paste(all_ivs_PAU_0001, collapse = "+"))
+formula_string_tbs_PAU_0001 <- as.formula(formula_string_tbs_PAU_0001)
+formula_string_tbs_PAU_0001
+mrmod_tbs_PAU_0001 <- ivreg(formula_string_tbs_PAU_0001, data = df_PAU)
+tidy(mrmod_tbs_PAU_0001,conf.int=T)
+```
